@@ -2,6 +2,7 @@
 
 namespace App\Actions\Fortify;
 
+use Illuminate\Support\Str;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
@@ -19,6 +20,8 @@ class CreateNewUser implements CreatesNewUsers
      */
     public function create(array $input): User
     {
+        $salt = Str::random(32);
+        $pepper = config('app.pepper');
         Validator::make($input, [
             'name' => ['required', 'string', 'max:255'],
             'email' => [
@@ -34,7 +37,8 @@ class CreateNewUser implements CreatesNewUsers
         return User::create([
             'name' => $input['name'],
             'email' => $input['email'],
-            'password' => Hash::make($input['password']),
+            'password' => Hash::make($input['password'].$salt.$pepper),
+            'salt' => $salt,
         ]);
     }
 }
